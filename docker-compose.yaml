@@ -1,16 +1,23 @@
 version: "2.3"
 services:
- nginx:
-   build: .
-   environment:
-   - NGINX_UPSTEAM=http://debug:80
-   - NGINX_TEMPLATE=auth-proxy
-   - NGINX_RELOAD_INTERVAL=5s
-   ports:
-   - "8080:80"
-   links:
-   - debug
- debug:
-   image: mendhak/http-https-echo
-   logging: 
-     driver: none
+  nginx:
+    image: docker-nginx:test
+    build: .
+    environment:
+    - NGINX_UPSTEAM=http://debug:80
+    - NGINX_TEMPLATE=auth-proxy
+    - NGINX_RELOAD_INTERVAL=5s
+    ports:
+    - "8080:80"
+    links:
+    - debug
+    healthcheck:
+      test: ["CMD", "curl", "-f", "-H", "Host:healthz", "http://127.0.0.1/healthz"]
+      interval: 1s
+      timeout: 10s
+      retries: 3
+      start_period: 1s
+  debug:
+    image: mendhak/http-https-echo
+    logging:
+      driver: none
