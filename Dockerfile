@@ -1,4 +1,11 @@
 FROM nginx:1.14.2
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        curl \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
 WORKDIR /nginx
 COPY . .
 
@@ -15,8 +22,15 @@ ENV NGINX_PORT=80 \
     NGINX_STATIC_CACHE_SHORT="30s" \
 
     NGINX_AUTH_SCHEME=Bearer \
-    NGINX_AUTH_TOKEN= \
+    NGINX_AUTH_TOKEN="" \
 
-    NGINX_RELOAD_INTERVAL=
+    NGINX_PHP_ROOT=/srv/public \
+    NGINX_PHP_SERVER=127.0.0.1:9000 \
+    NGINX_PHP_STATUS_LOCATION=/php-fpm-status \
+    NGINX_PHP_STATUS_PATH=/status \
+    NGINX_PHP_PING_LOCATION=/php-fpm-ping \
+    NGINX_PHP_PING_PATH=/ping \
+
+    NGINX_RELOAD_INTERVAL=""
 
 ENTRYPOINT ["/nginx/start.sh"]
