@@ -255,7 +255,7 @@ docs
 .importsortrc.json
 .lintstagedrc.json
 .travis.yml
-README
+README*
 coverage/
 
 # ignore .dockerignore for multistage build
