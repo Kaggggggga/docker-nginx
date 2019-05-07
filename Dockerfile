@@ -31,6 +31,14 @@ ENV NGINX_PORT=80 \
     NGINX_PHP_PING_LOCATION=/php-fpm-ping \
     NGINX_PHP_PING_PATH=/ping \
 
+    NGINX_CACHE_KEY='$uri' \
+    NGINX_CACHE_METHOD='GET HEAD' \
+    NGINX_CACHE_VALID='200 1d' \
+    NGINX_CACHE_USE_STALE='error timeout invalid_header updating http_500 http_502 http_503 http_504' \
+    NGINX_CACHE_LOCK_TIMEOUT=10s \
+    NGINX_CACHE_PATH=/data/nginx/cache \
+    NGINX_CACHE_TEMP_PATH=/data/nginx/cache-temp \
+
     NGINX_RELOAD_INTERVAL=""
 
 ENTRYPOINT ["/nginx/start.sh"]
