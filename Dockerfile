@@ -10,8 +10,9 @@ WORKDIR /nginx
 COPY . .
 
 ENV NGINX_PORT=80 \
-    NGINX_UPSTEAM="http://127.0.0.1:8080" \
+    NGINX_TEMPLATE=default \
     NGINX_HEALTHZ="/healthz" \
+    NGINX_UPSTEAM="http://127.0.0.1:8080" \
     NGINX_PROXY_HOST='$host' \
     NGINX_PROXY_TIMEOUT=60s \
 

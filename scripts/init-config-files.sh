@@ -16,9 +16,15 @@ nginx_confd_base="/etc/nginx/conf.d"
 replaces=`compgen -v | grep 'NGINX_'|awk '{print "\${"$0"}"}' | tr '\n' ','`
 replaces="'$replaces'"
 
-file="${base}/templates/${NGINX_TEMPLATE:-simple-proxy}.conf"
-echo "using ${file} as template"
-envsubst $replaces < "${file}" > "${nginx_confd_base}/default.conf"
+if [ ${NGINX_TEMPLATE} != "default" ]; then
+    file="${base}/templates/${NGINX_TEMPLATE}.conf"
+    if [ ! -f $file ]; then
+        echo "NGINX_TEMPLATE($NGINX_TEMPLATE) not found" 1>&2;
+        exit 1;
+    fi
+    echo "using ${file} as template"
+    envsubst $replaces < "${file}" > "${nginx_confd_base}/default.conf"
+fi
 
 if [[ ! -z "${NGINX_HEALTHZ}" ]]; then
     envsubst $replaces < "${base}/templates/healthz.conf" > "${nginx_confd_base}/healthz.conf"
