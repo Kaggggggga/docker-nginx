@@ -260,3 +260,4 @@ coverage/
 
 # ignore .dockerignore for multistage build
 .dockerignore
+examples/
