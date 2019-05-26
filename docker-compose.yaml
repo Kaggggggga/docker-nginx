@@ -1,23 +1,159 @@
 version: "2.3"
 services:
-  nginx:
+  ######
+  default:
     image: docker-nginx:test
     build: .
+    volumes:
+    - ./examples/default/default.conf:/etc/nginx/conf.d/default.conf
+    - ./examples/default/index.html:/var/www/html/index.html
     environment:
-    - NGINX_UPSTEAM=http://debug:80
-    - NGINX_TEMPLATE=auth-proxy
-    - NGINX_RELOAD_INTERVAL=5s
+#      NGINX_TEMPLATE: default
+      NGINX_HEALTHZ: /healthz
     ports:
     - "8080:80"
-    links:
-    - debug
-    healthcheck:
+    healthcheck: &healthcheck
       test: ["CMD", "curl", "-f", "-H", "Host:healthz", "http://127.0.0.1/healthz"]
       interval: 1s
       timeout: 10s
       retries: 3
       start_period: 1s
-  debug:
+  ######
+  static-local:
+    image: docker-nginx:test
+    build: .
+    volumes:
+    - ./examples/static-local:/var/www/html/
+    environment:
+      NGINX_TEMPLATE: static-local
+      NGINX_STATIC_ROOT: /var/www/html/
+      NGINX_STATIC_INDEX: index.html
+    ports:
+    - "8081:80"
+    healthcheck: *healthcheck
+  ######
+  static-proxy:
+    image: docker-nginx:test
+    build: .
+    volumes:
+    - ./examples/static-proxy:/var/www/html/
+    environment:
+      NGINX_TEMPLATE: static-proxy-v2
+      NGINX_STATIC_ROOT: /var/www/html/
+      NGINX_STATIC_INDEX: index.html
+      NGINX_STATIC_PATH: /static/
+      NGINX_STATIC_UPSTEAM: http://static-local:80
+      NGINX_STATIC_UPSTEAM_PATH: /
+      NGINX_STATIC_CACHE_PROXY: 50s
+      NGINX_STATIC_CACHE_LOCAL: 10s
+    ports:
+    - "8082:80"
+    links:
+    - static-local
+    healthcheck: *healthcheck
+  ######
+  simple-proxy:
+    image: docker-nginx:test
+    build: .
+    environment:
+      NGINX_TEMPLATE: simple-proxy
+      NGINX_PROXY_HOST: proxy.debug.hostname
+      NGINX_UPSTEAM: http://fake-api:80
+    ports:
+    - "8083:80"
+    links:
+    - fake-api
+    healthcheck: *healthcheck
+  ######
+  php-fpm-proxy:
+    image: docker-nginx:test
+    build: .
+    environment:
+      NGINX_TEMPLATE: php-fpm-proxy
+      NGINX_PHP_ROOT: /var/www/html/
+      NGINX_PHP_SERVER: php-fpm:9000
+    ports:
+    - "8084:80"
+    links:
+    - php-fpm
+    healthcheck: *healthcheck
+  php-fpm:
+    image: php:7.1-fpm-stretch
+    volumes:
+    - ./examples/php-fpm-proxy:/var/www/html/
+    logging:
+      driver: none
+  ######
+  cache-proxy:
+    image: docker-nginx:test
+    build: .
+    environment:
+      NGINX_TEMPLATE: cache-proxy
+      NGINX_PROXY_HOST: proxy.debug.hostname
+      NGINX_UPSTEAM: http://php-fpm-proxy:80
+      NGINX_PROXY_TIMEOUT: 60s
+      NGINX_CACHE_KEY: '$$uri'
+      NGINX_CACHE_LOCK_TIMEOUT: '10s'
+      NGINX_CACHE_METHOD: 'GET HEAD'
+      NGINX_CACHE_BACKGROUND_UPDATE: 'on'
+      NGINX_CACHE_VALID: '200 1d'
+      NGINX_CACHE_USE_STALE: 'error timeout invalid_header updating http_500 http_502 http_503 http_504'
+      NGINX_CACHE_KEY_ZONE_SIZE: '10m'
+      NGINX_CACHE_INACTIVE_TIME: '24h'
+      NGINX_CACHE_MAX_SIZE: '1g'
+      NGINX_CACHE_TEMP_PATH: /data/nginx/cache-temp
+      NGINX_CACHE_PATH: /data/nginx/cache
+    volumes:
+    - ./examples/cache-proxy/cache-temp:/data/nginx/cache-temp
+    - ./examples/cache-proxy/cache:/data/nginx/cache
+    ports:
+    - "8085:80"
+    links:
+    - php-fpm-proxy
+    healthcheck: *healthcheck
+    ######
+  auth-proxy:
+    image: docker-nginx:test
+    build: .
+    environment:
+      NGINX_TEMPLATE: auth-proxy
+      NGINX_AUTH_SCHEME: Basic
+      NGINX_AUTH_TOKEN: i.am.token
+      NGINX_PROXY_HOST: proxy.debug.hostname
+      NGINX_UPSTEAM: http://fake-api:80
+    ports:
+    - "8086:80"
+    links:
+    - fake-api
+    healthcheck: *healthcheck
+    ######
+  backend-static-reverse-proxy:
+    image: docker-nginx:test
+    build: .
+    volumes:
+    - ./examples/backend-static-reverse-proxy:/var/www/html/
+    environment:
+      NGINX_TEMPLATE: backend-static-reverse-proxy
+      NGINX_STATIC_ROOT: /var/www/html/
+      NGINX_STATIC_INDEX: index.html
+      NGINX_STATIC_PATH: /static/
+      NGINX_STATIC_UPSTEAM: http://static-local:80
+      NGINX_STATIC_UPSTEAM_PATH: /
+      NGINX_STATIC_CACHE_PROXY: 50s
+      NGINX_STATIC_CACHE_LOCAL: 10s
+      NGINX_BACKEND_PATH: /api/
+      NGINX_BACKEND_HOST: proxy.debug.hostname
+      NGINX_BACKEND_UPSTEAM: http://fake-api:80
+      NGINX_BACKEND_UPSTEAM_PATH: /proxy-api/
+    ports:
+    - "8087:80"
+    links:
+    - fake-api
+    - static-local
+    healthcheck: *healthcheck
+    ######
+  fake-api:
     image: mendhak/http-https-echo
     logging:
       driver: none
+#    entrypoint: tail -f /dev/null
