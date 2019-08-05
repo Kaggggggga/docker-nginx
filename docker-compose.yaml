@@ -126,7 +126,7 @@ services:
     links:
     - fake-api
     healthcheck: *healthcheck
-    ######
+  ######
   backend-static-reverse-proxy:
     image: docker-nginx:test
     build: .
@@ -151,9 +151,55 @@ services:
     - fake-api
     - static-local
     healthcheck: *healthcheck
-    ######
+  ######
   fake-api:
     image: mendhak/http-https-echo
     logging:
       driver: none
 #    entrypoint: tail -f /dev/null
+  basic-auth-proxy:
+    image: docker-nginx:test
+    logging:
+      driver: none
+    build: .
+    environment:
+      NGINX_TEMPLATE: basic-auth-proxy
+      NGINX_PROXY_HOST: proxy.debug.hostname
+      NGINX_UPSTEAM: http://fake-api:80
+      NGINX_BASIC_AUTH_USERNAME: user
+      NGINX_BASIC_AUTH_PASSWORD: pass
+    ports:
+    - "8088:80"
+    links:
+    - fake-api
+    healthcheck: *healthcheck
+  basic-auth-bypass-ip-proxy:
+    image: docker-nginx:test
+    build: .
+    environment:
+      NGINX_TEMPLATE: basic-auth-bypass-ip-proxy
+      NGINX_PROXY_HOST: proxy.debug.hostname
+      NGINX_UPSTEAM: http://fake-api:80
+      NGINX_BASIC_AUTH_USERNAME: user
+      NGINX_BASIC_AUTH_PASSWORD: pass
+      NGINX_BYPASS_WHITELIST_IPS: "127.0.0.1,172.18.0.1"
+    ports:
+    - "8089:80"
+    links:
+    - fake-api
+    healthcheck: *healthcheck
+  bypass-ip-proxy:
+    image: docker-nginx:test
+    build: .
+    environment:
+      NGINX_TEMPLATE: bypass-ip-proxy
+      NGINX_PROXY_HOST: proxy.debug.hostname
+      NGINX_BYPASS_UPSTEAM: http://fake-api:80
+      NGINX_UPSTEAM: http://basic-auth-bypass-ip-proxy:80
+      NGINX_BYPASS_WHITELIST_IPS: "127.0.0.1,172.18.0.1"
+    ports:
+    - "8090:80"
+    links:
+    - fake-api
+    - basic-auth-bypass-ip-proxy
+    healthcheck: *healthcheck
