@@ -11,6 +11,16 @@ for script in $init_scripts; do
     fi
 done
 
+if [[ -z "${NGINX_DNS_RESOLVER}" ]]; then
+    [ "${NGINX_DNS_RESOLVER_TYPE}" = "docker-default" ] && export NGINX_DNS_RESOLVER=$NGINX_DNS_RESOLVER_DOCKER_DEFAULT
+    [ "${NGINX_DNS_RESOLVER_TYPE}" = "k8s-default" ] && export NGINX_DNS_RESOLVER=$NGINX_DNS_RESOLVER_K8S_DEFAULT
+    [ "${NGINX_DNS_RESOLVER_TYPE}" = "default" ] && export NGINX_DNS_RESOLVER=$NGINX_DNS_RESOLVER_DEFAULT
+fi
+export NGINX_DNS_RESOLVER_FULL=""
+if [[ ! -z "${NGINX_DNS_RESOLVER}" ]]; then
+    export NGINX_DNS_RESOLVER_FULL="resolver ${NGINX_DNS_RESOLVER};"
+fi
+
 nginx_confd_base="/etc/nginx/conf.d"
 
 replaces=`compgen -v | grep 'NGINX_'|awk '{print "\${"$0"}"}' | tr '\n' ','`
