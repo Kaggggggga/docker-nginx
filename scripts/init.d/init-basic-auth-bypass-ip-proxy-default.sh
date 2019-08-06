@@ -29,7 +29,9 @@ END
 
     ## basic auth
     echo "$NGINX_BASIC_AUTH_USERNAME:{PLAIN}$NGINX_BASIC_AUTH_PASSWORD" > "$NGINX_BASIC_AUTH_PATH"
-    [[ -z "$NGINX_BASIC_AUTH_REALM" ]] && export NGINX_BASIC_AUTH_REALM='$switch'
+    if [[ -z "$NGINX_BASIC_AUTH_REALM" ]]; then
+        export NGINX_BASIC_AUTH_REALM='$switch'
+    fi
 
     ## reuse template
     base="/nginx"

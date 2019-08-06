@@ -17,8 +17,9 @@ if [[ -z "${NGINX_DNS_RESOLVER}" ]]; then
     [ "${NGINX_DNS_RESOLVER_TYPE}" = "default" ] && export NGINX_DNS_RESOLVER=$NGINX_DNS_RESOLVER_DEFAULT
 fi
 export NGINX_DNS_RESOLVER_FULL=""
-[[ ! -z "${NGINX_DNS_RESOLVER}" ]] && NGINX_DNS_RESOLVER_FULL="resolver ${NGINX_DNS_RESOLVER};"
-
+if [[ ! -z "${NGINX_DNS_RESOLVER}" ]]; then
+    export NGINX_DNS_RESOLVER_FULL="resolver ${NGINX_DNS_RESOLVER};"
+fi
 
 nginx_confd_base="/etc/nginx/conf.d"
 
