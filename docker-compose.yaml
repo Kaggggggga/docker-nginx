@@ -163,6 +163,7 @@ services:
     environment:
       NGINX_TEMPLATE: redirect-proxy
       NGINX_REDIRECT_CODE: 302
+      ## no colon after host, if port is empty
       NGINX_REDIRECT_PORT: 8080
       NGINX_REDIRECT_PROTO: http
     ports:
