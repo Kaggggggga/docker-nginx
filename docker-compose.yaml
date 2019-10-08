@@ -28,6 +28,7 @@ services:
       NGINX_TEMPLATE: static-local
       NGINX_STATIC_ROOT: /var/www/html/
       NGINX_STATIC_INDEX: index.html
+      NGINX_STATIC_EXTEND: 'proxy_set_header Authorization "aaaa";'
     ports:
     - "8081:80"
     healthcheck: *healthcheck
@@ -46,6 +47,7 @@ services:
       NGINX_STATIC_UPSTEAM_PATH: /
       NGINX_STATIC_CACHE_PROXY: 50s
       NGINX_STATIC_CACHE_LOCAL: 10s
+      NGINX_DEFAULT_EXTEND: 'proxy_set_header Authorization "aaaaaa";'
     ports:
     - "8082:80"
     links:
