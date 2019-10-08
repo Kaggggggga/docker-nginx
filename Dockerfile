@@ -16,6 +16,9 @@ ENV NGINX_PORT=80 \
     NGINX_PROXY_HOST='$host' \
     NGINX_PROXY_TIMEOUT=60s \
 
+    NGINX_ACCESS_LOG='/dev/stdout  main' \
+    NGINX_ERROR_LOG='/dev/stderr  error' \
+
     NGINX_STATIC_PATH="/static/" \
     NGINX_STATIC_UPSTEAM="http://127.0.0.1:8080" \
     NGINX_STATIC_ROOT="/srv/build/" \
