@@ -16,9 +16,14 @@ ENV NGINX_PORT=80 \
     NGINX_PROXY_HOST='$host' \
     NGINX_PROXY_TIMEOUT=60s \
     NGINX_DEFAULT_EXTEND="" \
-
+    NGINX_CLIENT_MAX_BODY_SIZE='1m' \
+    NGINX_SENDFILE='on' \
+    NGINX_TCP_NOPUSH='off' \
+    NGINX_GZIP='on' \
+    NGINX_KEEPALIVE_TIMEOUT='65' \
     NGINX_ACCESS_LOG='/dev/stdout  main' \
     NGINX_ERROR_LOG='/dev/stderr  error' \
+    NGINX_LOG_FORMAT_MAIN='$remote_addr - $remote_user [$time_local] "$request" $status $body_bytes_sent "$http_referer" "$http_user_agent" "$http_x_forwarded_for"' \
 
     NGINX_STATIC_PATH="/static/" \
     NGINX_STATIC_UPSTEAM="http://127.0.0.1:8080" \

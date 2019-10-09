@@ -21,7 +21,10 @@ if [[ ! -z "${NGINX_DNS_RESOLVER}" ]]; then
     export NGINX_DNS_RESOLVER_FULL="resolver ${NGINX_DNS_RESOLVER};"
 fi
 
-nginx_confd_base="/etc/nginx/conf.d"
+nginx_base="/etc/nginx"
+nginx_confd_base="${nginx_base}/conf.d"
+
+cp "${base}/templates/nginx.conf" "${nginx_base}/nginx.conf"
 
 replaces=`compgen -v | grep 'NGINX_'|awk '{print "\${"$0"}"}' | tr '\n' ','`
 replaces="'$replaces'"
@@ -40,6 +43,6 @@ if [[ ! -z "${NGINX_HEALTHZ}" ]]; then
     envsubst $replaces < "${base}/templates/healthz.conf" > "${nginx_confd_base}/healthz.conf"
 fi
 
-envsubst $replaces < "${base}/templates/global.conf" > "${nginx_confd_base}/global.conf"
+envsubst $replaces < "${base}/templates/global.conf" > "${nginx_base}/global.conf"
 
 nginx -t
